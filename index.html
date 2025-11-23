@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Logic Designer & Simulator</title>
+    <style>
+        :root {
+            --bg: #1e1e2e;
+            --panel: #2a2a3c;
+            --primary: #89b4fa;
+            --accent: #f38ba8;
+            --success: #a6e3a1;
+            --text: #cdd6f4;
+            --border: #45475a;
+        }
+
+        body {
+            font-family: 'Segoe UI', monospace;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1,
+        h2 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .card {
+            background: var(--panel);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* STEP 1: MINTERM SELECTOR */
+        .minterm-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .m-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: #6c7086;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: 0.2s;
+            font-weight: bold;
+        }
+
+        .m-btn:hover {
+            border-color: var(--primary);
+        }
+
+        .m-btn.active {
+            background: var(--primary);
+            color: var(--bg);
+            box-shadow: 0 0 10px rgba(137, 180, 250, 0.4);
+        }
+
+        /* STEP 2: TRUTH TABLE */
+        .tt-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border);
+            padding: 5px;
+            text-align: center;
+        }
+
+        th {
+            background: #313244;
+            position: sticky;
+            top: 0;
+        }
+
+        .row-active {
+            background-color: rgba(166, 227, 161, 0.2);
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        /* STEP 3: K-MAP */
+        .kmap-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .kmap-grid {
+            display: grid;
+            grid-template-columns: 30px repeat(4, 50px);
+            grid-template-rows: 30px repeat(4, 50px);
+            gap: 2px;
+        }
+
+        .k-cell {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .k-header {
+            background: transparent;
+            border: none;
+            font-size: 0.8rem;
+            color: #fab387;
+        }
+
+        .k-one {
+            background-color: var(--primary);
+            color: var(--bg);
+        }
+
+        .k-idx {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            font-size: 0.6rem;
+            opacity: 0.5;
+        }
+
+        /* STEP 4: DECODER SIMULATION */
+        .circuit-board {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            padding: 20px;
+            background: #181825;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        /* Inputs */
+        .inputs-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .switch-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle {
+            position: relative;
+            width: 40px;
+            height: 20px;
+            background: #45475a;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .toggle.on {
+            background: var(--success);
+        }
+
+        .toggle.on::after {
+            left: 22px;
+        }
+
+        /* Decoder Visual */
+        .decoder-box {
+            width: 120px;
+            height: 260px;
+            border: 2px solid var(--text);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            background: #313244;
+            position: relative;
+        }
+
+        .decoder-label {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            letter-spacing: 5px;
+            font-weight: bold;
+        }
+
+        .decoder-pins {
+            position: absolute;
+            right: -10px;
+            top: 10px;
+            bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 90%;
+        }
+
+        .pin {
+            width: 10px;
+            height: 10px;
+            background: #585b70;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+        }
+
+        .pin.active {
+            background: var(--accent);
+            box-shadow: 0 0 5px var(--accent);
+        }
+
+        .pin-line {
+            position: absolute;
+            left: 10px;
+            height: 2px;
+            background: #45475a;
+            width: 60px;
+            transition: 0.2s;
+        }
+
+        .pin.active .pin-line {
+            background: var(--accent);
+        }
+
+        /* OR Gate & LED */
+        .or-gate {
+            width: 60px;
+            height: 60px;
+            border: 2px solid var(--text);
+            border-left: 0;
+            border-radius: 0 50px 50px 0;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .or-gate::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: -2px;
+            bottom: -2px;
+            width: 20px;
+            border-radius: 50%;
+            border-right: 2px solid var(--text);
+            background: #181825;
+        }
+
+        .led {
+            width: 30px;
+            height: 30px;
+            background: #333;
+            border-radius: 50%;
+            box-shadow: inset 0 0 5px #000;
+            transition: 0.3s;
+            border: 2px solid #555;
+        }
+
+        .led.on {
+            background: #f38ba8;
+            box-shadow: 0 0 20px #f38ba8, inset 0 0 5px #000;
+            border-color: #fff;
+        }
+
+        .expression-display {
+            font-family: 'Courier New', monospace;
+            background: black;
+            padding: 10px;
+            margin-top: 10px;
+            border-left: 4px solid var(--success);
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Logic Design Studio</h1>
+    <p>Fonksiyonunu Tanımla -> Analiz Et -> Simüle Et</p>
+
+    <div class="container">
+        <div class="card full-width">
+            <h2>1. Fonksiyonu Tanımla (Minterms)</h2>
+            <p>Çıkışın "1" olmasını istediğiniz durumları (Minterm) seçin. (4 Değişken: A, B, C, D)</p>
+            <div class="minterm-grid" id="mintermGrid">
+            </div>
+            <div class="expression-display" id="sopDisplay">F(A,B,C,D) = Σ( ... )</div>
+        </div>
+
+        <div class="card">
+            <h2>2. Truth Table</h2>
+            <div class="tt-container">
+                <table id="truthTable">
+                    <thead>
+                        <tr>
+                            <th>Dec</th>
+                            <th>A</th>
+                            <th>B</th>
+                            <th>C</th>
+                            <th>D</th>
+                            <th>F</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>3. Karnaugh Map</h2>
+            <p>Gray Code sıralamasına göre otomatik yerleşim.</p>
+            <div class="kmap-wrapper">
+                <div class="kmap-grid" id="kmapGrid">
+                    <div></div>
+                    <div class="k-header">00</div>
+                    <div class="k-header">01</div>
+                    <div class="k-header">11</div>
+                    <div class="k-header">10</div>
+
+                    <div class="k-header">00</div>
+                    <div class="k-cell" id="k0"><span class="k-idx">0</span>0</div>
+                    <div class="k-cell" id="k4"><span class="k-idx">4</span>0</div>
+                    <div class="k-cell" id="k12"><span class="k-idx">12</span>0</div>
+                    <div class="k-cell" id="k8"><span class="k-idx">8</span>0</div>
+
+                    <div class="k-header">01</div>
+                    <div class="k-cell" id="k1"><span class="k-idx">1</span>0</div>
+                    <div class="k-cell" id="k5"><span class="k-idx">5</span>0</div>
+                    <div class="k-cell" id="k13"><span class="k-idx">13</span>0</div>
+                    <div class="k-cell" id="k9"><span class="k-idx">9</span>0</div>
+
+                    <div class="k-header">11</div>
+                    <div class="k-cell" id="k3"><span class="k-idx">3</span>0</div>
+                    <div class="k-cell" id="k7"><span class="k-idx">7</span>0</div>
+                    <div class="k-cell" id="k15"><span class="k-idx">15</span>0</div>
+                    <div class="k-cell" id="k11"><span class="k-idx">11</span>0</div>
+
+                    <div class="k-header">10</div>
+                    <div class="k-cell" id="k2"><span class="k-idx">2</span>0</div>
+                    <div class="k-cell" id="k6"><span class="k-idx">6</span>0</div>
+                    <div class="k-cell" id="k14"><span class="k-idx">14</span>0</div>
+                    <div class="k-cell" id="k10"><span class="k-idx">10</span>0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card full-width">
+            <h2>4. Devre Tasarımı & Simülasyon (Decoder Implementation)</h2>
+            <p>Herhangi bir fonksiyon, bir Decoder ve seçili Minterm'leri toplayan bir OR kapısı ile tasarlanabilir.</p>
+
+            <div class="circuit-board">
+                <div class="inputs-panel">
+                    <div class="switch-group"><span>A</span>
+                        <div class="toggle" onclick="toggleInput('A')" id="swA"></div>
+                    </div>
+                    <div class="switch-group"><span>B</span>
+                        <div class="toggle" onclick="toggleInput('B')" id="swB"></div>
+                    </div>
+                    <div class="switch-group"><span>C</span>
+                        <div class="toggle" onclick="toggleInput('C')" id="swC"></div>
+                    </div>
+                    <div class="switch-group"><span>D</span>
+                        <div class="toggle" onclick="toggleInput('D')" id="swD"></div>
+                    </div>
+                    <div style="margin-top:10px; color:#aaa; font-size:0.8rem">Current Input: <span id="currentVal"
+                            style="color:white; font-weight:bold;">0</span></div>
+                </div>
+
+                <div style="width: 50px; border-bottom: 2px solid #555; position:relative; top:10px;"></div>
+
+                <div class="decoder-box">
+                    <span style="color:#aaa; font-size:0.7rem; position:absolute; top:5px;">4x16</span>
+                    <div class="decoder-label">DECODER</div>
+                    <div class="decoder-pins" id="decoderPins">
+                    </div>
+                </div>
+
+                <div
+                    style="width: 80px; height: 200px; display:flex; align-items:center; justify-content:center; color:#555; font-size:2rem;">
+                    }
+                </div>
+
+                <div class="or-gate">
+                    <span style="font-size:0.7rem; color:#aaa;">OR</span>
+                </div>
+
+                <div style="width: 30px; height: 2px; background:var(--text);"></div>
+                <div style="text-align: center;">
+                    <div class="led" id="outputLed"></div>
+                    <div style="margin-top:5px; font-weight:bold;">F</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        const activeMinterms = new Set();
+        const inputs = { A: 0, B: 0, C: 0, D: 0 };
+
+        // Initialize UI
+        function init() {
+            const grid = document.getElementById('mintermGrid');
+            const decoderPins = document.getElementById('decoderPins');
+
+            for (let i = 0; i < 16; i++) {
+                // Minterm Buttons
+                const btn = document.createElement('button');
+                btn.className = 'm-btn';
+                btn.innerText = 'm' + i;
+                btn.onclick = () => toggleMinterm(i, btn);
+                grid.appendChild(btn);
+
+                // Decoder Pins (Visuals)
+                const pinWrapper = document.createElement('div');
+                pinWrapper.className = 'pin';
+                pinWrapper.id = 'pin-' + i;
+
+                // Connection line to OR gate (only visible if minterm selected)
+                const line = document.createElement('div');
+                line.className = 'pin-line';
+                line.id = 'line-' + i;
+                line.style.opacity = '0.1'; // Hidden by default
+
+                pinWrapper.appendChild(line);
+                decoderPins.appendChild(pinWrapper);
+            }
+
+            updateAll();
+        }
+
+        function toggleMinterm(i, btn) {
+            if (activeMinterms.has(i)) {
+                activeMinterms.delete(i);
+                btn.classList.remove('active');
+            } else {
+                activeMinterms.add(i);
+                btn.classList.add('active');
+            }
+            updateAll();
+        }
+
+        function updateAll() {
+            updateSOPDisplay();
+            updateTruthTable();
+            updateKMap();
+            updateCircuitVisuals();
+            runSimulation();
+        }
+
+        function updateSOPDisplay() {
+            const sorted = Array.from(activeMinterms).sort((a, b) => a - b);
+            document.getElementById('sopDisplay').innerText =
+                `F(A,B,C,D) = Σm(${sorted.join(', ')})`;
+        }
+
+        function updateTruthTable() {
+            const tbody = document.querySelector('#truthTable tbody');
+            tbody.innerHTML = '';
+
+            for (let i = 0; i < 16; i++) {
+                const row = document.createElement('tr');
+                row.id = 'tt-row-' + i;
+
+                // Binary decomposition
+                const bin = i.toString(2).padStart(4, '0');
+                const isActive = activeMinterms.has(i);
+
+                row.innerHTML = `
+                <td>${i}</td>
+                <td>${bin[0]}</td>
+                <td>${bin[1]}</td>
+                <td>${bin[2]}</td>
+                <td>${bin[3]}</td>
+                <td style="font-weight:bold; color:${isActive ? 'var(--success)' : 'inherit'}">${isActive ? 1 : 0}</td>
+            `;
+                if (isActive) row.classList.add('row-active');
+                tbody.appendChild(row);
+            }
+        }
+
+        function updateKMap() {
+            // Clear all
+            for (let i = 0; i < 16; i++) {
+                const cell = document.getElementById('k' + i);
+                cell.innerHTML = `<span class="k-idx">${i}</span>0`;
+                cell.classList.remove('k-one');
+            }
+            // Set active
+            activeMinterms.forEach(i => {
+                const cell = document.getElementById('k' + i);
+                cell.innerHTML = `<span class="k-idx">${i}</span>1`;
+                cell.classList.add('k-one');
+            });
+        }
+
+        function updateCircuitVisuals() {
+            // Show lines from Decoder to OR gate ONLY for selected minterms
+            for (let i = 0; i < 16; i++) {
+                const line = document.getElementById('line-' + i);
+                if (activeMinterms.has(i)) {
+                    line.style.opacity = '1';
+                    line.style.width = '60px'; // Connect
+                } else {
+                    line.style.opacity = '0.1';
+                    line.style.width = '10px'; // Disconnect
+                }
+            }
+        }
+
+        // --- Simulation Logic ---
+
+        function toggleInput(key) {
+            inputs[key] = inputs[key] ? 0 : 1;
+            const sw = document.getElementById('sw' + key);
+            if (inputs[key]) sw.classList.add('on'); else sw.classList.remove('on');
+            runSimulation();
+        }
+
+        function runSimulation() {
+            // Calculate decimal value from inputs A,B,C,D
+            const decimalVal = (inputs.A * 8) + (inputs.B * 4) + (inputs.C * 2) + (inputs.D * 1);
+
+            document.getElementById('currentVal').innerText = decimalVal;
+
+            // 1. Visualize Decoder Activity (Which pin is active?)
+            // Clear old active pins
+            document.querySelectorAll('.pin').forEach(p => p.classList.remove('active'));
+            // Activate current pin
+            const currentPin = document.getElementById('pin-' + decimalVal);
+            if (currentPin) currentPin.classList.add('active');
+
+            // 2. Check Logic (Is this decimal value in our minterm set?)
+            const output = activeMinterms.has(decimalVal);
+            const led = document.getElementById('outputLed');
+
+            if (output) {
+                led.classList.add('on');
+            } else {
+                led.classList.remove('on');
+            }
+
+            // Highlight Truth Table Row
+            document.querySelectorAll('#truthTable tr').forEach(r => r.style.background = '');
+            const currentRow = document.getElementById('tt-row-' + decimalVal);
+            if (currentRow) currentRow.style.background = '#45475a';
+        }
+
+        // Boot
+        init();
+
+    </script>
+
+</body>
+
+</html>
