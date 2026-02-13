@@ -2,15 +2,12 @@
 
 "Interactive Logic Design Studio: Minterm to Decoder synthesis, automatic K-Map visualization, and real-time digital circuit simulation."
 
-link -> https://asrav-resit.github.io/logic-design-simulator/
 --
 
 # ⚡ Logic Design Studio & Simulator
 
 Bu proje, **Bilgisayar Mühendisliği Mantık Devreleri** dersi için hazırlanmış, tarayıcı tabanlı interaktif bir analiz ve simülasyon aracıdır. **M. Morris Mano** ve **Hüseyin Ekiz**'in eğitim metodolojileri referans alınarak geliştirilmiştir.
 
-## 🚀 Canlı Demo
-Projenin çalışan halini buradan deneyebilirsiniz: **[Buraya GitHub Pages Linkiniz Gelecek]**
 
 ## 🎯 Özellikler
 
@@ -28,9 +25,6 @@ Bu araç, kullanıcıya aşağıdaki 4 adımlı tasarım akışını sunar:
 * **HTML5 & CSS3:** Modern ve responsive arayüz tasarımı.
 * **JavaScript (Vanilla):** Logic hesaplamalar, DOM manipülasyonu ve simülasyon motoru.
 
-## 📚 Referanslar
-* *Digital Design* - M. Morris Mano
-* *Mantık Devreleri* - Hüseyin Ekiz
 
 ---
 *Bu proje eğitim amaçlı açık kaynak olarak geliştirilmiştir.*
